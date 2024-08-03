@@ -30,6 +30,7 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [clickedButton, setClickedButton] = useState(null);
 
   const updateInventory = async (user) => {
     if (!user) return;
@@ -87,6 +88,15 @@ export default function Home() {
     await updateInventory(user);
   };
   
+  const handleClick = (action, itemName) => {
+    setClickedButton(action + itemName);
+    setTimeout(() => setClickedButton(null), 300); // Reset the button state after 300ms
+    if (action === 'add') {
+      addItem(itemName);
+    } else {
+      removeItem(itemName);
+    }
+  };
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
