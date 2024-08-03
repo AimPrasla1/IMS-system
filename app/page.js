@@ -1,8 +1,8 @@
 'use client'
 import Logo from "../public/assets/logo-no-background.png";
 import { useState, useEffect } from "react";
-import { Box, Stack, Button, Modal, TextField, Typography } from "@mui/material";
-import { auth, provider, signInWithPopup, firestore } from "@/firebase";
+import { Box, Stack, Button, Modal, TextField, Typography, CircularProgress} from "@mui/material";
+import { auth, provider, signInWithPopup, firestore, onAuthStateChanged } from "@/firebase";
 import { collection, query, getDocs, doc, setDoc, deleteDoc, getDoc } from "firebase/firestore/lite";
 
 const style = {
@@ -29,9 +29,13 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const updateInventory = async () => {
-    const snapshot = query(collection(firestore, 'inventory'));
+  const updateInventory = async (user) => {
+    if (!user) return;
+    
+    const userInventoryRef = collection(firestore, 'users', user.uid, 'inventory');
+    const snapshot = query(userInventoryRef);
     const docs = await getDocs(snapshot);
     const inventoryList = [];
     docs.forEach((doc) => {
@@ -39,14 +43,23 @@ export default function Home() {
     });
     setInventory(inventoryList);
   };
-
+  
   useEffect(() => {
-    updateInventory();
-  }, []);
+    onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        updateInventory(currentUser);
+      }
+      setLoading(false);
+    });
+  }, []);  
 
   const addItem = async (item) => {
+    if (!user) return;
+    
     const lowerCaseItem = item.toLowerCase();
-    const docRef = doc(collection(firestore, 'inventory'), lowerCaseItem);
+    const userInventoryRef = collection(firestore, `users/${user.uid}/inventory`);
+    const docRef = doc(userInventoryRef, lowerCaseItem);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       const { quantity } = docSnap.data();
@@ -54,11 +67,14 @@ export default function Home() {
     } else {
       await setDoc(docRef, { quantity: 1 });
     }
-    await updateInventory();
+    await updateInventory(user);
   };
-
+  
   const removeItem = async (item) => {
-    const docRef = doc(collection(firestore, 'inventory'), item);
+    if (!user) return;
+    
+    const userInventoryRef = collection(firestore, `users/${user.uid}/inventory`);
+    const docRef = doc(userInventoryRef, item);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       const { quantity } = docSnap.data();
@@ -68,8 +84,9 @@ export default function Home() {
         await setDoc(docRef, { quantity: quantity - 1 });
       }
     }
-    await updateInventory();
+    await updateInventory(user);
   };
+  
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -77,22 +94,26 @@ export default function Home() {
   const handleLogin = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
-      setUser(result.user);
+      const currentUser = result.user;
+      setUser(currentUser);
+      updateInventory(currentUser);
     } catch (error) {
       console.error("Error signing in with Google", error);
     }
   };
-
+  
   const handleLogout = () => {
     auth.signOut();
     setUser(null);
+    setInventory([]);
   };
-
+  
+  
   const filteredInventory = inventory.filter((item) => 
     item.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const totalPages = Math.ceil(filteredInventory.length / ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(filteredInventory.length / ITEMS_PER_PAGE));
   const displayedItems = filteredInventory.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
@@ -102,18 +123,48 @@ export default function Home() {
 
   return (
     <>
-      {!user ? (
+      {loading ? (
         <Box
           width="100vw"
           height="100vh"
           display={'flex'}
-          flexDirection={'column'}
           justifyContent={'center'}
           alignItems={'center'}
           bgcolor={'black'}
         >
-          <Typography variant={'h4'} color={'white'} marginBottom={2}>
-            Please Sign In with Google
+          <CircularProgress sx={{color: '#fcd12a'}} />
+        </Box>
+      ):!user ? (
+        <Box
+        width="100vw"
+        height="100vh"
+        display={'flex'}
+        flexDirection={'column'}
+        justifyContent={'center'}
+        alignItems={'center'}
+        bgcolor={'black'}
+        sx={{
+          backgroundColor: 'black',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          textAlign: 'center',
+          padding: 4,
+        }}
+      >
+        <Box
+          sx={{
+            backgroundColor: 'rgba(0, 0, 0, 0.0)',
+            padding: 4,
+            borderRadius: 2,
+          }}
+        >
+          <img 
+          src="/assets/logo-no-background.png" 
+          alt="Logo" 
+          style={{ width: '250px', height: 'auto', objectFit: 'contain', marginBottom: '20px' }} 
+          />
+          <Typography variant={'h3'} color={'white'} marginBottom={2}>
+            
           </Typography>
           <Button
             variant="contained"
@@ -121,6 +172,9 @@ export default function Home() {
             sx={{
               backgroundColor: '#fcd12a',
               color: 'black',
+              fontSize: '16px',
+              padding: '10px 20px',
+              borderRadius: '7px',
               '&:hover': {
                 backgroundColor: 'white',
                 color: 'black',
@@ -130,6 +184,8 @@ export default function Home() {
             Sign In with Google
           </Button>
         </Box>
+      </Box>
+      
       ) : (
         <>
           <Box
@@ -159,6 +215,7 @@ export default function Home() {
             <Button
               variant="text"
               color="inherit"
+              onClick={() => window.location.reload()}
               sx={{
                 backgroundColor: '#fcd12a',
                 color: 'black',
@@ -170,21 +227,6 @@ export default function Home() {
               }}
             >
                 Home
-              </Button>
-              <Button
-                variant="text"
-                color="inherit"
-                sx={{
-                  backgroundColor: '#fcd12a',
-                  color: 'black',
-                  fontSize: '14px',
-                  '&:hover': {
-                  backgroundColor: 'white',
-                  color: 'black',
-                  },
-                }}
-              >
-                Inventory
               </Button>
               <Button
                 variant="text"

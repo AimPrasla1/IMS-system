@@ -1,12 +1,9 @@
-// Import the functions you need from the SDKs you need
+// firebase.js
 import { initializeApp } from "firebase/app";
 import { getFirestore } from 'firebase/firestore/lite';
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "firebase/auth";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyCK5KpPu3TSMhRY_aMsmNwlBVxJ3XrzrEw",
   authDomain: "inventorymanager-01.firebaseapp.com",
@@ -21,6 +18,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const firestore = getFirestore(app);
 const auth = getAuth(app);
+auth.languageCode = 'en';
 const provider = new GoogleAuthProvider();
 
-export { firestore, auth, provider, signInWithPopup };
+export { firestore, auth, provider, signInWithPopup, onAuthStateChanged };
