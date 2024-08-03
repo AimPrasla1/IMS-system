@@ -503,38 +503,48 @@ export default function Home() {
                   </Typography>
                 </Box>
                 <Stack direction="row" spacing={2}>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    sx={{ 
-                      fontSize: '12px',
-                      backgroundColor: '#fcd12a',
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={() => handleClick('add', item.name)}
+                  sx={{
+                    fontSize: '12px',
+                    backgroundColor: clickedButton === 'add' + item.name ? 'white' : '#fcd12a',
+                    color: clickedButton === 'add' + item.name ? 'black' : 'black',
+                    '&:hover': {
+                      backgroundColor: 'white',
                       color: 'black',
-                      '&:hover': {
-                        backgroundColor: 'white',
-                        color: 'black',
-                      },
-                    }}
-                    onClick={() => addItem(item.name)}
-                  >
-                    Add
-                  </Button>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    sx={{ 
-                      fontSize: '12px',
-                      backgroundColor: '#fcd12a',
+                    },
+                    '@media (max-width:600px)': {
+                      fontSize: '12px', // Adjust font size for mobile
+                      padding: '6px 12px', // Adjust padding for mobile
+                    }
+                  }}
+                >
+                  Add
+                </Button>
+
+                
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={() => handleClick('remove', item.name)}
+                  sx={{
+                    fontSize: '12px',
+                    backgroundColor: clickedButton === 'remove' + item.name ? 'white' : '#fcd12a',
+                    color: clickedButton === 'remove' + item.name ? 'black' : 'black',
+                    '&:hover': {
+                      backgroundColor: 'white',
                       color: 'black',
-                      '&:hover': {
-                        backgroundColor: 'white',
-                        color: 'black',
-                      },
-                    }}
-                    onClick={() => removeItem(item.name)}
-                  >
-                    Remove
-                  </Button>
+                    },
+                    '@media (max-width:600px)': {
+                      fontSize: '12px', // Adjust font size for mobile
+                      padding: '6px 12px', // Adjust padding for mobile
+                    }
+                  }}
+                >
+                  Remove
+                </Button>
                 </Stack>
               </Box>            
             ))}
