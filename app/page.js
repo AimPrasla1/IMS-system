@@ -308,8 +308,10 @@ export default function Home() {
                   bgcolor: '#262727',
                   color: 'white',
                   borderRadius: 4,
-                  marginRight: '0px',
-                  width: '70%'
+                  marginRight: '15px',
+                  width: '70%',
+                  marginLeft: '10px',
+
                 }}
               />
               <Button
@@ -425,17 +427,12 @@ export default function Home() {
               paddingX={2}
               marginBottom={2} // Add margin bottom for spacing
             >
-              <Box width="50px" textAlign="center" marginLeft={3}>
+              <Box width="50px" textAlign="center" marginLeft={2}>
                 <Typography variant={'h3'} color={'#fff'} fontSize={18}>
                   #
                 </Typography>
               </Box>
-              <Box width="200px" textAlign="left" marginLeft={1}>
-                <Typography variant={'h3'} color={'#fff'} fontSize={18}>
-                  Item Name
-                </Typography>
-              </Box>
-              <Box width="100px" textAlign="center" marginLeft={-2}>
+              <Box width="100px" textAlign="center" marginRight={3}>
                 <Typography variant={'h3'} color={'#fff'} fontSize={18}>
                   Quantity
                 </Typography>
