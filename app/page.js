@@ -308,9 +308,11 @@ export default function Home() {
                   bgcolor: '#262727',
                   color: 'white',
                   borderRadius: 4,
-                  marginRight: '15px',
                   width: '70%',
-                  marginLeft: '10px',
+                  '@media (max-width:600px)': {
+                    marginRight: '15px', // Adjust right margin for mobile
+                    marginLeft: '15px',  // Adjust left margin for mobile
+                  }
 
                 }}
               />
@@ -325,9 +327,13 @@ export default function Home() {
                     backgroundColor: 'white',
                     color: 'black',
                   },
+                  '@media (max-width:600px)': {
+                    fontSize: '12px', // Adjust font size for mobile
+                    padding: '6px 12px', // Adjust padding for mobile
+                  }
                 }}
               >
-                Add New Item
+                Add Item
               </Button>
             </Box>
     
