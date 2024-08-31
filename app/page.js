@@ -1,7 +1,7 @@
 'use client'
 import Logo from "../public/assets/logo-no-background.png";
 import { useState, useEffect } from "react";
-import { Box, Stack, Button, Modal, TextField, Typography, CircularProgress} from "@mui/material";
+import { Box, Stack, Button, Modal, TextField, Typography, CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
 import { auth, provider, signInWithPopup, firestore, onAuthStateChanged } from "@/firebase";
 import { collection, query, getDocs, doc, setDoc, deleteDoc, getDoc } from "firebase/firestore/lite";
 
@@ -434,164 +434,117 @@ export default function Home() {
               display="flex"
               flexDirection="column" // Ensures items stack vertically
             >
-    
-            <Box
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-              width="100%"
-              paddingX={2}
-              marginBottom={2} // Add margin bottom for spacing
-            >
-              <Box width="50px" textAlign="center" marginLeft={2}>
-                <Typography variant={'h3'} color={'#fff'} fontSize={18}>
-                  #
-                </Typography>
-              </Box>
-              <Box width="100px" textAlign="center" marginRight={3}>
-                <Typography variant={'h3'} color={'#fff'} fontSize={18}>
-                  Quantity
-                </Typography>
-              </Box>
-            </Box>
-            <Stack
-              width="100%"
-              spacing={2}
-              flex="1" // Ensures stack takes up remaining space
-              overflow="auto" // Allows scrolling if content overflows
-            >
-            {displayedItems.map((item, index) => (
-              <Box
-                key={item.name}
-                width="100%"
-                minHeight="50px"
-                display={'flex'}
-                justifyContent={'space-between'}
-                alignItems={'center'}
-                bgcolor={'#1b1c1c'}
-                paddingX={2}
-                borderRadius={4}
-              >
-                <Box width="50px" textAlign="center" marginLeft={3}>
-                  <Typography
-                    variant={'h3'}
-                    color={'#fff'}
-                    fontSize={'18px'}
+              <TableContainer component={Paper} sx={{ bgcolor: '#1b1c1c', color: 'white', borderRadius: 4 }}>
+      <Table sx={{ minWidth: 650 }} aria-label="simple table">
+        <TableHead>
+          <TableRow>
+            <TableCell sx={{ color: 'white' }}>#</TableCell>
+            <TableCell sx={{ color: 'white' }}>Item</TableCell>
+            <TableCell sx={{ color: 'white' }}>Quantity</TableCell>
+            <TableCell sx={{ color: 'white' }} align="right">Actions</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {displayedItems.map((item, index) => (
+            <TableRow key={item.name}>
+              <TableCell component="th" scope="row" sx={{ color: 'white', width: '10%' }}>
+                {index + 1}
+              </TableCell>
+              <TableCell sx={{ color: 'white', width: '11%' }}>{item.name.charAt(0).toUpperCase() + item.name.slice(1)}</TableCell>
+              <TableCell sx={{ color: 'white', width: '15%', paddingLeft: '37px'}}>{item.quantity}</TableCell>
+              <TableCell align="right" sx={{ width: '20%' }}>
+                <Stack direction="row" spacing={1} justifyContent="flex-end">
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={() => handleClick('add', item.name)}
+                    sx={{
+                      fontSize: '12px',
+                      backgroundColor: clickedButton === 'add' + item.name ? 'white' : '#fcd12a',
+                      color: clickedButton === 'add' + item.name ? 'black' : 'black',
+                      '&:hover': {
+                        backgroundColor: 'white',
+                        color: 'black',
+                      },
+                      '@media (max-width:600px)': {
+                        fontSize: '12px', // Adjust font size for mobile
+                        padding: '6px 12px', // Adjust padding for mobile
+                      }
+                    }}
                   >
-                    {index + 1}
-                  </Typography>
-                </Box>
-                <Box width="200px" textAlign="left" marginLeft={1}>
-                  <Typography
-                    variant={'h3'}
-                    color={'#fff'}
-                    fontSize={'18px'}
-                    overflow={'hidden'}
-                    textOverflow={'ellipsis'}
-                    whiteSpace={'nowrap'}
+                    Add
+                  </Button>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={() => handleClick('remove', item.name)}
+                    sx={{
+                      fontSize: '12px',
+                      backgroundColor: clickedButton === 'remove' + item.name ? 'white' : '#fcd12a',
+                      color: clickedButton === 'remove' + item.name ? 'black' : 'black',
+                      '&:hover': {
+                        backgroundColor: 'white',
+                        color: 'black',
+                      },
+                      '@media (max-width:600px)': {
+                        fontSize: '12px', // Adjust font size for mobile
+                        padding: '6px 12px', // Adjust padding for mobile
+                      }
+                    }}
                   >
-                    {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
-                  </Typography>
-                </Box>
-                <Box width="100px" textAlign="center" marginRight={3}>
-                  <Typography
-                    variant={'h3'}
-                    color={'#fff'}
-                    fontSize={'18px'}
-                  >
-                    {item.quantity}
-                  </Typography>
-                </Box>
-                <Stack direction="row" spacing={2}>
-                <Button
-                  variant="contained"
-                  size="small"
-                  onClick={() => handleClick('add', item.name)}
-                  sx={{
-                    fontSize: '12px',
-                    backgroundColor: clickedButton === 'add' + item.name ? 'white' : '#fcd12a',
-                    color: clickedButton === 'add' + item.name ? 'black' : 'black',
-                    '&:hover': {
-                      backgroundColor: 'white',
-                      color: 'black',
-                    },
-                    '@media (max-width:600px)': {
-                      fontSize: '12px', // Adjust font size for mobile
-                      padding: '6px 12px', // Adjust padding for mobile
-                    }
-                  }}
-                >
-                  Add
-                </Button>
-
-                
-                <Button
-                  variant="contained"
-                  size="small"
-                  onClick={() => handleClick('remove', item.name)}
-                  sx={{
-                    fontSize: '12px',
-                    backgroundColor: clickedButton === 'remove' + item.name ? 'white' : '#fcd12a',
-                    color: clickedButton === 'remove' + item.name ? 'black' : 'black',
-                    '&:hover': {
-                      backgroundColor: 'white',
-                      color: 'black',
-                    },
-                    '@media (max-width:600px)': {
-                      fontSize: '12px', // Adjust font size for mobile
-                      padding: '6px 12px', // Adjust padding for mobile
-                    }
-                  }}
-                >
-                  Remove
-                </Button>
+                    Remove
+                  </Button>
                 </Stack>
-              </Box>            
-            ))}
-            </Stack>
-            <Box 
-              display="flex" 
-              justifyContent="center" 
-              alignItems="center"
-              marginTop="auto" // Push to the bottom
-              paddingTop={2} // Optional: Add some padding at the top
-            >
-              <Button
-                variant="contained"
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(currentPage - 1)}
-                sx={{
-                  backgroundColor: '#fcd12a',
-                  color: 'black',
-                  '&:hover': {
-                    backgroundColor: 'white',
-                    color: 'black',
-                  },
-                }}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+
+              <Box 
+                display="flex" 
+                justifyContent="center" 
+                alignItems="center"
+                marginTop="auto" // Push to the bottom
+                paddingTop={2} // Optional: Add some padding at the top
               >
-                Previous
-              </Button>
-              <Typography variant="body1" marginX={2} color={'white'}>
-                Page {currentPage} of {totalPages}
-              </Typography>
-              <Button
-                variant="contained"
-                disabled={!hasNextPage}
-                onClick={() => setCurrentPage(currentPage + 1)}
-                sx={{
-                  backgroundColor: '#fcd12a',
-                  color: 'black',
-                  '&:hover': {
-                    backgroundColor: 'white',
+                <Button
+                  variant="contained"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  sx={{
+                    backgroundColor: '#fcd12a',
                     color: 'black',
-                  },
-                }}
-              >
-                Next
-              </Button>
+                    '&:hover': {
+                      backgroundColor: 'white',
+                      color: 'black',
+                    },
+                  }}
+                >
+                  Previous
+                </Button>
+                <Typography variant="body1" marginX={2} color={'white'}>
+                  Page {currentPage} of {totalPages}
+                </Typography>
+                <Button
+                  variant="contained"
+                  disabled={!hasNextPage}
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  sx={{
+                    backgroundColor: '#fcd12a',
+                    color: 'black',
+                    '&:hover': {
+                      backgroundColor: 'white',
+                      color: 'black',
+                    },
+                  }}
+                >
+                  Next
+                </Button>
+              </Box>
             </Box>
           </Box>
-        </Box>
         </>
       )}
     </>
