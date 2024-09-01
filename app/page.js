@@ -1,9 +1,23 @@
 'use client'
 import Logo from "../public/assets/logo-no-background.png";
 import { useState, useEffect } from "react";
-import { Box, Stack, Button, Modal, TextField, Typography, CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
+import { Box, Stack, Button, Modal, TextField, Typography, CircularProgress,
+   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, 
+  Drawer, List, ListItem, ListItemIcon, ListItemText, IconButton } from "@mui/material";
+import MenuIcon from '@mui/icons-material/Menu';
+import InventoryIcon from '@mui/icons-material/Inventory';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import CloseIcon from '@mui/icons-material/Close';
+
 import { auth, provider, signInWithPopup, firestore, onAuthStateChanged } from "@/firebase";
 import { collection, query, getDocs, doc, setDoc, deleteDoc, getDoc } from "firebase/firestore/lite";
+import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const style = {
   position: 'absolute',
@@ -20,7 +34,7 @@ const style = {
   gap: 3,
 };
 
-const ITEMS_PER_PAGE = 9; // Number of items per page
+const ITEMS_PER_PAGE = 10; // Number of items per page
 
 export default function Home() {
   const [inventory, setInventory] = useState([]);
@@ -31,6 +45,8 @@ export default function Home() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [clickedButton, setClickedButton] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
 
   const updateInventory = async (user) => {
     if (!user) return;
@@ -131,6 +147,32 @@ export default function Home() {
 
   const hasNextPage = currentPage < totalPages;
 
+
+  const data = {
+    labels: inventory.map(item => item.name), // Extract item names
+    datasets: [
+      {
+        label: 'Item Count',
+        data: inventory.map(item => item.quantity), // Extract item quantities
+        backgroundColor: '#fcd12a', // Bar color
+        borderRadius: 4, // Rounded corners for the bars
+      },
+    ],
+  };
+
+  const options = {
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 10, // Max value for y-axis
+      },
+    },
+    responsive: true,
+    maintainAspectRatio: false,
+  };
+
+  const drawerWidth = 240;
+
   return (
     <>
       {loading ? (
@@ -198,76 +240,250 @@ export default function Home() {
       
       ) : (
         <>
+          
           <Box
-            width="100%"
-            height="80px"
-            bgcolor={'black'}
-            display={'flex'}
-            justifyContent={'space-between'}
-            alignItems={'center'}
-            paddingX={2}
-          >
-            <Box display="flex" alignItems="center">
-              <img
-                src="/assets/logo-no-background.png"
-                alt="Logo"
-                style={{ width: '150px', height: 'auto', objectFit: 'contain', marginLeft: '10px' }}
-              />
-              <Typography
-                variant={'h4'}
-                color={'inherit'}
-                textAlign={'left'}
-                ml={2}
-              >
-              </Typography>
-            </Box>
-            <Box display="flex" alignItems="center" gap={2}>
-            <Button
-              variant="text"
-              color="inherit"
-              onClick={() => window.location.reload()}
-              sx={{
-                backgroundColor: '#fcd12a',
-                color: 'black',
-                fontSize: '14px',
-                '&:hover': {
-                backgroundColor: 'white',
-                color: 'black',
-                },
-              }}
+  width="100%"
+  height="80px"
+  bgcolor={'#1b1c1c'}
+  display={'flex'}
+  justifyContent={'space-between'}
+  alignItems={'center'}
+  paddingX={2}
+  position="fixed"
+  top={0}
+  zIndex={1300} // Make sure it stays above other content
+>
+  <Drawer
+    variant="permanent"
+    open={drawerOpen}
+    sx={{
+      width: drawerOpen ? drawerWidth : 60,
+      flexShrink: 0,
+      '& .MuiDrawer-paper': {
+        width: drawerOpen ? drawerWidth : 60,
+        boxSizing: 'border-box',
+        backgroundColor: '#1b1c1c',
+        color: 'white',
+        overflowX: 'hidden',
+      },
+    }}
+  >
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        height: 80,
+        padding: 1,
+        paddingLeft: drawerOpen ? 2 : 0, // Adjust padding when open
+        paddingRight: drawerOpen ? 2 : 0,
+      }}
+    >
+      {drawerOpen && (
+        <img
+          src="/assets/logo-no-background.png"
+          alt="Logo"
+          style={{
+            width: '150px',
+            height: 'auto',
+            objectFit: 'contain',
+          }}
+        />
+      )}
+      <IconButton
+        edge="end"
+        color="inherit"
+        aria-label="menu"
+        onClick={() => setDrawerOpen(!drawerOpen)}
+        sx={{ marginLeft: drawerOpen ? 'auto' : 0, marginLeft: 1 }}
+      >
+        <MenuIcon sx={{ color: "#fcd12a" }} />
+      </IconButton>
+    </Box>
+
+    <List>
+      <ListItem button>
+        <ListItemIcon>
+          <InventoryIcon sx={{ color: "#fcd12a" }} />
+        </ListItemIcon>
+        {drawerOpen && <ListItemText primary="Inventory" />}
+      </ListItem>
+
+      <ListItem button>
+        <ListItemIcon>
+          <ShoppingCartIcon sx={{ color: "#fcd12a" }} />
+        </ListItemIcon>
+        {drawerOpen && <ListItemText primary="Orders" />}
+      </ListItem>
+
+      <ListItem button>
+        <ListItemIcon>
+          <ShoppingCartIcon sx={{ color: "#fcd12a" }} />
+        </ListItemIcon>
+        {drawerOpen && <ListItemText primary="Purchases" />}
+      </ListItem>
+
+      <ListItem button>
+        <ListItemIcon>
+          <DashboardIcon sx={{ color: "#fcd12a" }} />
+        </ListItemIcon>
+        {drawerOpen && <ListItemText primary="Dashboard" />}
+      </ListItem>
+
+      <ListItem button>
+        <ListItemIcon>
+          <BarChartIcon sx={{ color: "#fcd12a" }} />
+        </ListItemIcon>
+        {drawerOpen && <ListItemText primary="Analytics" />}
+      </ListItem>
+    </List>
+  </Drawer>
+
+  <Box display="flex" alignItems="center" gap={2}>
+    <Button
+      variant="text"
+      color="inherit"
+      onClick={() => window.location.reload()}
+      sx={{
+        backgroundColor: '#fcd12a',
+        color: 'black',
+        fontSize: '14px',
+        '&:hover': {
+          backgroundColor: 'white',
+          color: 'black',
+        },
+      }}
+    >
+      Home
+    </Button>
+    <Button
+      variant="text"
+      color="inherit"
+      sx={{
+        backgroundColor: '#fcd12a',
+        color: 'black',
+        fontSize: '14px',
+        '&:hover': {
+          backgroundColor: 'white',
+          color: 'black',
+        },
+      }}
+      onClick={handleLogout}
+    >
+      Logout
+    </Button>
+  </Box>
+</Box>
+
+<Box
+  sx={{
+    marginTop: '80px', // Adjust for the fixed header
+    marginLeft: drawerOpen ? `${drawerWidth}px` : '60px', // Adjust the margin when the drawer is open
+    width: `calc(100% - ${drawerOpen ? drawerWidth : 60}px)`, // Adjust width to match the drawer
+    padding: 2,
+    paddingBottom: 6,
+    paddingRight: 6,
+    paddingLeft: 3.5,
+    backgroundColor: 'black',
+  }}
+  width="100vw"
+  minHeight="100vh"
+  display={'flex'}
+  flexDirection={'column'}
+  alignItems={'center'}
+>
+
+
+
+            
+            <Box display="flex" justifyContent="space-between" width="100%" marginBottom={2} gap={5} overflow="hidden">
+    <Box display="flex" flexDirection="column" alignItems="flex-start" flexGrow={1}>
+      <Typography sx={{ color: 'white', fontSize: 28 }}>Hello User</Typography>
+      <Typography
+        sx={{
+          color: 'gray',
+          fontSize: 20,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}
+      >
+        Welcome to your Stocked dashboard
+      </Typography>
+    </Box>
+
+    <Box
+      width="20%"
+      height="15vh"
+      bgcolor="black"
+      border="3px solid #1b1c1c"
+      borderRadius={4}
+    />
+    <Box
+      width="20%"
+      height="15vh"
+      bgcolor="black"
+      border="3px solid #1b1c1c"
+      borderRadius={4}
+    />
+    <Box
+      width="20%"
+      height="15vh"
+      bgcolor="black"
+      border="3px solid #1b1c1c"
+      borderRadius={4}
+    />
+  </Box>
+                
+            <Box 
+              display="flex" 
+              justifyContent="space-between" 
+              width="100%" 
+              minHeight="70vh" 
+              marginTop="20px" // Margin at the top for both boxes
+              overflow="hidden"
+              marginBottom="1px"
+              
             >
-                Home
-              </Button>
-              <Button
-                variant="text"
-                color="inherit"
-                sx={{
-                  backgroundColor: '#fcd12a',
-                  color: 'black',
-                  fontSize: '14px',
-                  '&:hover': {
-                  backgroundColor: 'white',
-                  color: 'black',
-                  },
-                }}
-                onClick={handleLogout}
-              >
-                Logout
-              </Button>
-            </Box>
-          </Box>
-      
-          <Box
-            width="100vw"
-            height="100vh"
-            display={'flex'}
-            flexDirection={'column'}
-            alignItems={'center'}
-            bgcolor={'black'}
-            padding={2}
-            paddingBottom={6} // To provide space at the bottom
-          >
-            <Box
+
+                    <Box 
+                      border={'3px solid #1b1c1c'}
+                      width="49%"  // Slightly reduced to allow space for the gap
+                      height="65vh"
+                      maxWidth="none"
+                      borderRadius={7}
+                      padding={2}
+                      display="flex"
+                      flexDirection="column"
+                      justifyContent="center"  // Center the chart vertically
+                      marginRight="1%"  // Adds a small gap between the two boxes
+                    >
+                      <Box
+                        sx={{
+                          width: 'calc(100% - 4px)',  // Full width minus 2 units of margin on each side
+                          height: 'calc(100% - 4px)', // Full height minus 2 units of margin on each side
+                          margin: 'auto',
+                        }}
+                      >
+                        <Bar data={data} options={options} />
+                      </Box>
+                    </Box>
+
+            <Box 
+              border={'3px solid #1b1c1c'}
+              width="49%"  // Same width as the left box
+              height="65vh"  
+              maxWidth="none"
+              borderRadius={7}
+              padding={2}
+              display="flex"
+              flexDirection="column"
+              justifyContent="flex-end"
+              marginLeft="auto"  // Keeps the box aligned to the right side
+            >
+
+            
+              <Box
               display="flex"
               justifyContent="space-between"
               alignItems="center"
@@ -278,8 +494,16 @@ export default function Home() {
               borderRadius={4}
               paddingLeft={2}
               paddingRight={2}
+              marginBottom={2}
+              sx={{scrollbarWidth: "none", // Hide scrollbar in Firefox
+                  "&::-webkit-scrollbar": {
+                    display: "none", // Hide scrollbar in Chrome, Safari, Opera
+                  },
+                }}
+
+      
             >
-              <Typography variant={'h2'} color={'#fff'} textAlign={'center'} fontSize={20} marginLeft={2}>
+              <Typography variant={'h2'} color={'#fff'} textAlign={'center'} fontSize={16} marginLeft={2}>
                 Inventory Items
               </Typography>
               <TextField
@@ -318,7 +542,7 @@ export default function Home() {
                   bgcolor: '#262727',
                   color: 'white',
                   borderRadius: 4,
-                  width: '70%',
+                  width: '50%',
                   '@media (max-width:600px)': {
                     marginRight: '15px', // Adjust right margin for mobile
                     marginLeft: '15px',  // Adjust left margin for mobile
@@ -360,6 +584,7 @@ export default function Home() {
                   bgcolor: '#1b1c1c', // Change background color to black
                   color: 'white', // Change text color to white
                 }}
+              
               >
                 <Typography id="modal-modal-title" variant="h6" component="h2" sx={{ color: 'white' }}>
                   Add Item
@@ -422,19 +647,15 @@ export default function Home() {
                 </Stack>
               </Box>
             </Modal>
-      
-            <Box 
-              border={'3px solid #1b1c1c'}
-              width="100%" // Set to a larger width
-              flex="1" // Ensure the box takes up remaining space
-              maxWidth="none" // Set a max width for better responsiveness
-              borderRadius={7}
-              marginTop="20px" // Add margin for spacing
-              padding={2} // Add padding for better spacing
-              display="flex"
-              flexDirection="column" // Ensures items stack vertically
-            >
-              <TableContainer component={Paper} sx={{ bgcolor: '#1b1c1c', color: 'white', borderRadius: 4 }}>
+
+    <TableContainer component={Paper} sx={{ bgcolor: '#1b1c1c', color: 'white', borderRadius: 4,
+    '&::-webkit-scrollbar': {
+      display: 'none',
+    },
+    '-ms-overflow-style': 'none',  // IE and Edge
+    'scrollbar-width': 'none',
+
+    }}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead>
           <TableRow>
@@ -508,6 +729,12 @@ export default function Home() {
                 alignItems="center"
                 marginTop="auto" // Push to the bottom
                 paddingTop={2} // Optional: Add some padding at the top
+                sx={{
+                  scrollbarWidth: "none", // Hide scrollbar in Firefox
+                  "&::-webkit-scrollbar": {
+                    display: "none", // Hide scrollbar in Chrome, Safari, Opera
+                  },
+                }}
               >
                 <Button
                   variant="contained"
@@ -545,7 +772,45 @@ export default function Home() {
               </Box>
             </Box>
           </Box>
-        </>
+          <Box 
+  display="flex" 
+  justifyContent="space-between" 
+  width="100%"  
+>
+  <Box
+    width="30%" // Adjust to control the size of each box
+    minHeight="30vh" // Adjust the height as needed
+    bgcolor="black"
+    border="1px solid gray" // Gray border
+    borderRadius={4} // Border radius of 4
+   
+  >
+    {/* Content for the first box */}
+  </Box>
+
+  <Box
+    width="30%" 
+    minHeight="30vh" 
+    bgcolor="black"
+    border="1px solid gray" 
+    borderRadius={4} 
+  >
+    {/* Content for the second box */}
+  </Box>
+
+  <Box
+    width="30%" 
+    minHeight="30vh" 
+    bgcolor="black"
+    border="1px solid gray" 
+    borderRadius={4} 
+  >
+    {/* Content for the third box */}
+  </Box>
+</Box>
+      </Box>
+        
+      </>
       )}
     </>
   );
